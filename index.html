@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title> ЛР-1 </title>
+
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+</head>
+
+<body>
+    <main>
+        <h1>Лабораторна робота №1</h1>
+        <h3>Варіант №5</h3>
+        <h2>Каталог навчальних ресурсів з рейтингом</h2>
+        <section>
+            <h2>Додати ресурс</h2>
+            <form id="form">
+                <label for="title">Назва: </label>
+                <input type="text" id="title" name="title" required>
+                <p id="title_error" class="error-text"></p>
+
+                <label for="link">Посилання:</label>
+                <input type="url" id="link" name="link" required>
+                <p id="link_error" class="error-text"></p>
+
+                <label for="statusSelect">Тип</label>
+                <select id="statusSelect" required>
+                    <option value="">Оберіть статус</option>
+                    <option value="book">Книга</option>
+                    <option value="website">Сайт</option>
+                    <option value="video">Відео</option>
+                    <option value="research">Дослідження</option>
+                    <option value="Authors">Авторське</option>
+                </select>
+                <p id="status_error" class="error-text"></p>
+
+                <label for="descriptionInput">Description</label>
+                <textarea id="descriptionInput" rows="3"></textarea>
+                <p id="description_error" class="error-text"></p>
+
+                <label for="author">Author</label>
+                <input type="text" id="author" name="author">
+                <p id="author_error" class="error-text"></p>
+
+                <button type="submit">Add</button>
+            </form>
+        </section>
+        <section>
+            <h2>Список ресурсів</h2>
+            <input type="text" id="searchInput" placeholder="Пошук за назвою" class="search">
+            <label for="filterType" class="filter">
+                <select id="filterType">
+                    <option value="all">All</option>
+                    <option value="book">Книга</option>
+                    <option value="website">Сайт</option>
+                    <option value="video">Відео</option>
+                    <option value="research">Дослідження</option>
+                    <option value="Authors">Авторське</option>
+                </select>
+            </label>
+            <table id="itemsTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Назва</th>
+                        <th>Тип</th>
+                        <th>Автор</th>
+                        <th>Дії</th>
+                    </tr>
+                </thead>
+                <tbody id="itemsTableBody">
+                </tbody>
+            </table>
+        </section>
+
+    </main>
+
+</body>
+
+</html>
