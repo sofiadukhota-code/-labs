@@ -132,7 +132,7 @@ itemsTableBody.addEventListener('click', function(e) {
         author.value = item.author;
         description.value = item.description;
         editId = id;
-        form.querySelector('button[type="submit"]').textContent = "Save Changes";
+        form.querySelector('button[type="submit"]').textContent = "Зберегти";
     }
 })
 
