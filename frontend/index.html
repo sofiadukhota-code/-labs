@@ -15,6 +15,21 @@
         <h1>Лабораторна робота №1</h1>
         <h3>Варіант №5</h3>
         <h2>Каталог навчальних ресурсів з рейтингом</h2>
+        <section id="users-section">
+            <h2>Користувач</h2>
+            <form id="user-form">
+                <label for="username">Нікнейм: </label>
+                <input type="text" id="username" placeholder="Нікнейм" required>
+                <label for="email">Електронна адреса: </label>
+                <input type="email" id="email" placeholder="Email" required>
+                <label for="userRole">Тип акаунту: </label>
+                <select id="userRole">
+                    <option value="user">Користувач</option>
+                    <option value="admin">Адміністратор</option>
+                </select>
+                <button type="submit">Створити акаунт</button>
+            </form>
+        </section>
         <section>
             <h2>Додати ресурс</h2>
             <form id="form">
@@ -61,6 +76,8 @@
                     <option value="Authors">Авторське</option>
                 </select>
             </label>
+            <button id="sortTitleBtn" class="buttons">Sort by name</button>
+            <button id="sortTypeBtn" class="buttons">Sort by type</button>
             <table id="itemsTable">
                 <thead>
                     <tr>
@@ -74,6 +91,32 @@
                 <tbody id="itemsTableBody">
                 </tbody>
             </table>
+        </section>
+        <section id="feedback-section">
+            <h2>Залишити відгук</h2>
+            <label for="userSelect">Ви — це:</label>
+            <select id="userSelect" required>
+                <option value="">Оберіть свого користувача</option>
+            </select>
+            <form id="feedback-form">
+                <label for="targetResource">Ресурс:</label>
+                <select id="targetResource" required>
+                    <option value="">Оберіть ресурс для відгуку</option>
+                </select>
+
+                <label for="ratingScore">Оцінка (1-5):</label>
+                <input type="number" id="ratingScore" min="1" max="5" value="5">
+
+                <label for="commentText">Ваш коментар:</label>
+                <textarea id="commentText" rows="2" placeholder="Що ви думаєте про цей ресурс?"></textarea>
+
+                <button type="submit" class="buttons">Опублікувати</button>
+            </form>
+            <div id="comments-section">
+                <h3>Відгуки користувачів</h3>
+                <div id="commentsList">
+                </div>
+            </div>
         </section>
 
     </main>
