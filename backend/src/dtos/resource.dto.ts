@@ -1,5 +1,6 @@
 export interface Resource {
     id: string;
+    userId: number;
     title: string;
     link: string;
     type: 'book' | 'website' | 'video' | 'research' | 'Authors';

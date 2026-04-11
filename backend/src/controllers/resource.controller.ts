@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import { ResourceService } from "../services/resource.service.js";
 import type { CreateResourceRequestDto } from "../dtos/resource.dto.js";
-import { ResourceQueryDto } from "../dtos/resource.dto.js";
+import type { ResourceQueryDto } from "../dtos/resource.dto.js";
 
 export const ResourceController = {
     getAll: (req: Request, res: Response) => {

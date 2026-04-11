@@ -1,3 +1,4 @@
+import { migrate } from "./db/migrate.js";
 import express from "express";
 import cors from "cors";
 import resourceRoutes from "./routes/resource.routes.js"
@@ -22,6 +23,18 @@ app.get("/health", (req, res) => {
 app.use(errorHandler);
 
 const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Server is on http://localhost:${PORT}/api/resources`);
-})
+
+
+async function startServer() {
+  try {
+    await migrate();
+
+    app.listen(PORT, () => {
+      console.log(`Server is on http://localhost:${PORT}/api/resources`);
+    });
+  } catch (err) {
+    console.error("Server cannot start", err);
+    process.exit(1);
+  }
+}
+startServer();

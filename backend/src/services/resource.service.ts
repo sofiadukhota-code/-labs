@@ -8,6 +8,8 @@ import type {
 } from "../dtos/resource.dto.js";
 import crypto from "node:crypto";
 
+const repo = new ResourceRepository();
+
 export const ResourceService = {
     mapToResponse: (resource: Resource): ResourceResponseDto => ({
         id: resource.id,
@@ -17,9 +19,8 @@ export const ResourceService = {
         author: resource.author,
         createdAt: resource.createdAt
     }),
-    getAllResources: (query: ResourceQueryDto): ResourceResponseDto[] => {
-        let list = ResourceRepository.getAll();
-
+    getAllResources: async (query: ResourceQueryDto): Promise<ResourceResponseDto[]> => {
+        let list: Resource[] = await repo.getAll();
         // 5.1 Фільтрація
         if (query.type) {
             list = list.filter(r => r.type === query.type);
@@ -42,7 +43,7 @@ export const ResourceService = {
 
         return list.map(ResourceService.mapToResponse);
     },
-    createResource: (dto: CreateResourceRequestDto): Resource => {
+    createResource: async (dto: CreateResourceRequestDto & { userId: number}): Promise<Resource> => {
         if (!dto.title || !dto.link || !dto.type || !dto.author) {
             const err = new Error("fields title, link, type, author are required") as any;
             err.status = 400;
@@ -73,15 +74,15 @@ export const ResourceService = {
             ...dto,
             createdAt: new Date().toISOString()
         }
-        return ResourceRepository.add(newResource);
+        return await repo.add(dto);
     },
-    getResourceById: (id: string) => {
-        return ResourceRepository.getById(id);
+    getResourceById: async (id: string | number): Promise<Resource | undefined> => {
+        return await repo.getById(id);
     },
-    updateResource: (id: string, dto: CreateResourceRequestDto) => {
-        return ResourceRepository.update(id, dto);
+    updateResource: async (id: string | number, dto: Partial<Resource>): Promise<Resource | null> => {
+        return await repo.update(id, dto);
     },
-    deleteResource: (id: string): boolean => {
-        return ResourceRepository.delete(id);
+    deleteResource: async (id: string | number): Promise<boolean> => {
+        return await repo.delete(id);
     }
 }

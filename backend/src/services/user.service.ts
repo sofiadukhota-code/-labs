@@ -1,10 +1,10 @@
 import { UserRepository } from "../repositories/user.repository.js";
 import { type User, type CreateUserRequestDto } from "../dtos/user.dto.js";
-import crypto from "node:crypto";
-import type { CreateFeedbackDto } from "../dtos/feedback.dto.js";
+
+const repo = new UserRepository();
 
 export const UserService = {
-    createUser: (dto: CreateUserRequestDto): User => {
+    createUser: async (dto: CreateUserRequestDto):Promise<User> => {
         if(!dto.username || !dto.email || !dto.role) {
             const err = new Error("Username, email and role are required") as any;
             err.status = 400;

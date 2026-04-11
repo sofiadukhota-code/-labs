@@ -69,11 +69,14 @@ function clearerrors() {
 async function loadData() {
     try {
         const response = await fetch(`${API_URL}/resources`);
-        items = await response.json();
-        renderTable();
+        const data = await response.json();
+        
+        items = data.items;
+        
+        renderTable(items);
         refreshResourceDropdown();
     } catch (err) {
-        console.error("Сервер вимкнено або помилка CORS");
+        console.error("Помилка завантаження:", err);
     }
 }
 
