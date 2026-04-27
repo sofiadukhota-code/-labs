@@ -4,7 +4,7 @@ import type { User, CreateUserRequestDto } from "../dtos/user.dto.js";
 import type { ResourceService } from "../services/resource.service.js";
 import { describe } from "node:test";
 
-export class  UserRepository {
+/*export class  UserRepository {
     async getAll(): Promise<User[]> {
         const sql = "SELECT id, email, name, createdAt FROM Users ORDER BY id DESC;";
         return await all<User>(sql);
@@ -26,7 +26,7 @@ export class  UserRepository {
         if(!created) throw new Error("creating user error");
         return created;
     }
-}
+}*/
 
 export class ResourceRepository {
     async getAll(): Promise<Resource[]> {
@@ -41,8 +41,16 @@ export class ResourceRepository {
     async add(data: Partial<Resource>): Promise<Resource> {
         const now = new Date().toISOString();
         const sql = `
-        INSERT INTO Resources (userId, title, description, createdAt)
-        VALUES (${Number(data.userId)}, '${data.title}', '${data.description}', '${now}')
+        INSERT INTO Resources (userId, title, description, link, type, author, createdAt)
+        VALUES (
+        ${Number(data.userId)}, 
+            '${data.title}', 
+            '${data.description || ''}', 
+            '${data.link}', 
+            '${data.type}', 
+            '${data.author}', 
+            '${now}'
+        );  
         `;
         const result = await run(sql);
         const created = await this.getById(result.lastID);
@@ -68,4 +76,14 @@ export class ResourceRepository {
         const result = await run(sql);
         return result.changes > 0;
     }
+    async getTopLikedResource(): Promise<any> {
+const sql = `
+    select resources.id, count(feedback.id) as likesCount from resources
+    JOIN feedback ON resources.id = feedback.resourceId
+    GROUP BY resources.id
+    ORDER BY likesCount DESC
+    LIMIT 3
+`
+ return await all(sql);
+}
 }

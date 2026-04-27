@@ -4,16 +4,16 @@ import type { CreateResourceRequestDto } from "../dtos/resource.dto.js";
 import type { ResourceQueryDto } from "../dtos/resource.dto.js";
 
 export const ResourceController = {
-    getAll: (req: Request, res: Response) => {
-        const query: ResourceQueryDto = req.query;
-        const data = ResourceService.getAllResources(query);
-
-        res.json({
-            items: data,
-            total: data.length
-        });
+    getAll: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+          const query = req.query as ResourceQueryDto;
+          const data = await ResourceService.getAllResources(query);
+          return res.json(data);
+        } catch(error) {
+            next(error);
+        }
     },
-    getById: (req: Request, res: Response, next: NextFunction) => {
+    getById: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const id = req.params.id as string;
             const resource = ResourceService.getResourceById(id);
@@ -62,5 +62,17 @@ export const ResourceController = {
         } catch (error) {
             next(error);
         }
+    },
+    getTopLiked: async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const top = await ResourceService.getTopLikedResource();
+    if (!top) {
+      res.status(404).json({ error: { code: "Not found", message: "No rated resources found" } });
+      return;
     }
+    res.status(200).json(top);
+  } catch (error) {
+    next(error);
+  }
+},
 }

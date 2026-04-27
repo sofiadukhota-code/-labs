@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS Resources (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    userId INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT,
+    link TEXT NOT NULL,
+    type TEXT NOT NULL,
+    author TEXT NOT NULL,
+    createdAt TEXT NOT NULL,
+    FOREIGN KEY (userId) REFERENCES Users(id) ON DELETE CASCADE
+);

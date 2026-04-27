@@ -3,10 +3,14 @@ import { ResourceController } from "../controllers/resource.controller.js";
 
 const router = Router();
 router.get("/", ResourceController.getAll);
+router.get("/top-liked", ResourceController.getTopLiked);
 router.get("/:id", ResourceController.getById);
 router.post("/", ResourceController.create);
 router.put("/:id", ResourceController.update)
 router.patch("/:id", ResourceController.patch);
+// router.get("/", ResourceController.getAll);
+
+// router.get("/:id", ResourceController.getById);
 export default router;
 
 router.delete("/:id", ResourceController.delete)

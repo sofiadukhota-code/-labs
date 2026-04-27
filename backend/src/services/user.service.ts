@@ -1,40 +1,43 @@
 import { UserRepository } from "../repositories/user.repository.js";
-import { type User, type CreateUserRequestDto } from "../dtos/user.dto.js";
-
+import {
+    type User,
+    type CreateUserRequestDto,
+    type UpdateUserRequestDto
+} from "../dtos/user.dto.js";
 const repo = new UserRepository();
-
-export const UserService = {
-    createUser: async (dto: CreateUserRequestDto):Promise<User> => {
-        if(!dto.username || !dto.email || !dto.role) {
-            const err = new Error("Username, email and role are required") as any;
-            err.status = 400;
-            err.code = "Validation error";
-            throw err;
-        }
-        if(dto.username.length < 3) {
-            const err = new Error("Username must be at least 3 characters") as any;
-            err.status = 400;
-            err.code = "Validation error";
-            throw err;
-        }
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if(!emailRegex.test(dto.email)) {
-            const err = new Error("Invalid email format") as any;
-            err.status = 400;
-            err.code = "Validation error";
-            throw err;
-        }
-        const newUser: User = {
-            id: crypto.randomUUID(),
-            ...dto,
-            createdAt: new Date().toISOString()
-        }
-        return UserRepository.add(newUser);
-    },
-    getAllUsers: () => UserRepository.getAll(),
-    getUserById: (id: string) => UserRepository.getById(id),
-    updateUser: (id: string, dto: CreateUserRequestDto) : User | null => {
-        return UserRepository.update(id, dto);
-    },
-    deleteUser: (id: string) => UserRepository.delete(id)
+function validationError(message: string): never {
+    const err = new Error(message) as any;
+    err.status = 400;
+    err.code = "Validation error";
+    throw err;
 }
+function validateCreateUserDto(dto: CreateUserRequestDto): void {
+    if (!dto.username || !dto.email || !dto.role) {
+        validationError("Username, email and role are required");
+    }
+    if (dto.username.trim().length < 3) {
+        validationError("Username must be at least 3 characters");
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(dto.email)) {
+        validationError("Invalid email format");
+    }
+}
+export const UserService = {
+    createUser: async (dto: CreateUserRequestDto): Promise<User> => {
+        validateCreateUserDto(dto);
+        return repo.create(dto);
+    },
+    getAllUsers: async (): Promise<User[]> => {
+        return repo.getAll();
+    },
+    getUserById: async (id: string): Promise<User | undefined> => {
+        return repo.getById(id);
+    },
+    updateUser: async (id: string, dto: UpdateUserRequestDto): Promise<User | null> => {
+        return repo.update(id, dto);
+    },
+    deleteUser: async (id: string): Promise<boolean> => {
+        return repo.delete(id);
+    }
+};

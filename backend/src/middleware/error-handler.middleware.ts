@@ -7,5 +7,6 @@ export const errorHandler = (err: any, req: Request, res: Response, next: NextFu
             code: err.code || "INTERNALERROR",
             message: err.message || "Smth wrong with server",
         }
-    })
+    });
+    res.status(500).json({ error: err.message || "Internal Server Error" });
 }
