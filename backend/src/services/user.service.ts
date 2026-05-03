@@ -12,11 +12,11 @@ function validationError(message: string): never {
     throw err;
 }
 function validateCreateUserDto(dto: CreateUserRequestDto): void {
-    if (!dto.username || !dto.email || !dto.role) {
-        validationError("Username, email and role are required");
+    if (!dto.name || !dto.email || !dto.role) {
+        validationError("Name, email and role are required");
     }
-    if (dto.username.trim().length < 3) {
-        validationError("Username must be at least 3 characters");
+    if (dto.name.trim().length < 3) {
+        validationError("Name must be at least 3 characters");
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(dto.email)) {

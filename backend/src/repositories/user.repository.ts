@@ -14,14 +14,14 @@ export class UserRepository {
         const now = new Date().toISOString();
         const sql = `
         INSERT INTO Users (email, name, role, createdAt)
-        VALUES ('${data.email}', '${data.username}', '${data.role}', '${now}');
+        VALUES ('${data.email}', '${data.name}', '${data.role}', '${now}');
         `
         const result = await run(sql);
         const newUser = await this.getById(result.lastID)
         return newUser!
     }
     async update(id: string | number, data: any): Promise<User | null> {
-        const sql = `UPDATE Users SET name = '${data.username}' WHERE id = ${Number(id)}`;
+        const sql = `UPDATE Users SET name = '${data.name}' WHERE id = ${Number(id)}`;
         await run(sql);
         return (await this.getById(id)) || null;
     }

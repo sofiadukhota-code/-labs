@@ -7,10 +7,20 @@ import type {
   UpdateResourceRequestDto,
   Resource,
 } from "../dtos/resource.dto.js";
+import { RESOURCE_TYPES} from "../dtos/resource.dto.js";
 import crypto from "node:crypto";
 
 const repo = new ResourceRepository();
 
+const AllowedSortBy = ["createdAt", "title"] as const;
+const AllowedSortDir = ["asc", "desc"] as const;
+
+function validationError(message: string): never {
+  const err = new Error(message) as any;
+  err.status = 400;
+  err.code = "Validation error";
+  throw err;
+}
 export const ResourceService = {
   mapToResponse: (resource: Resource): ResourceResponseDto => ({
     id: resource.id,
@@ -20,90 +30,44 @@ export const ResourceService = {
     author: resource.author,
     createdAt: resource.createdAt,
   }),
-  getAllResources: async (
-    query: ResourceQueryDto,
-  ): Promise<ResourceResponseDto[]> => {
-    let list: Resource[] = await repo.getAll();
-    // 5.1 Фільтрація
-    if (query.type) {
-      list = list.filter((r) => r.type === query.type);
+  getAllResources: async (query: ResourceQueryDto): Promise<ResourceResponseDto[]> => {
+    if(query.sortBy && !AllowedSortBy.includes(query.sortBy as any)) {
+      validationError(`invalid sortBy. Allowed: ${AllowedSortBy.join(", ")}`)
     }
-    if (query.author) {
-      list = list.filter((r) =>
-        r.author.toLowerCase().includes(query.author!.toLowerCase()),
-      );
+    if(query.sortDir && !AllowedSortDir.includes(query.sortDir as any)) {
+      validationError(`invalid SortDir. Allowed: ${AllowedSortDir.join(", ")}`)
     }
-
-    // 5.3 Сортування
-    if (query.sortBy) {
-      const field = query.sortBy as keyof ResourceResponseDto;
-      const dir = query.sortDir === "desc" ? -1 : 1;
-
-      list.sort((a, b) => {
-        if (a[field] < b[field]) return -1 * dir;
-        if (a[field] > b[field]) return 1 * dir;
-        return 0;
-      });
-    }
-
-    return list.map(ResourceService.mapToResponse);
+    const list: Resource[] = await repo.getAllFiltered(query);
+    return list.map(ResourceService.mapToResponse)
   },
-  createResource: async (dto: CreateResourceRequestDto): Promise<Resource> => {
+  createResource: async (dto: CreateResourceRequestDto, userId: number): Promise<Resource> => {
     if (!dto.title || !dto.link || !dto.type || !dto.author) {
-      const err = new Error(
-        "fields title, link, type, author are required",
-      ) as any;
-      err.status = 400;
-      err.code = "Validation error";
-      throw err;
+      validationError("fields title, link, type, author are required");
+    }
+    if(!Number.isFinite(userId) || userId <= 0) {
+      validationError("userId is required")
     }
     if (dto.title.trim().length < 3) {
-      const err = new Error("Title is too short") as any;
-      err.status = 400;
-      err.code = "Validation error";
-      throw err;
+      validationError("Title is too short");
     }
     if (dto.author.trim().length < 2) {
-      const err = new Error("Author`s name is too short") as any;
-      err.status = 400;
-      err.code = "Validation error";
-      throw err;
+      validationError("Author`s name is too short");
     }
-    const allowedTypes = ["website", "book", "article", "video"];
-    if (!allowedTypes.includes(dto.type)) {
-      const err = new Error(
-        `Unavaliable type. Allowed: ${allowedTypes.join(", ")}`,
-      ) as any;
-      err.status = 400;
-      err.code = "Validation error";
-      throw err;
+    if (!RESOURCE_TYPES.includes(dto.type)) {
+      validationError( `Unavaliable type. Allowed: ${RESOURCE_TYPES.join(", ")}`)
     }
-    return await repo.add({ ...dto });
+    return await repo.add({ ...dto, userId });
   },
-  getResourceById: async (
-    id: string | number,
-  ): Promise<Resource | undefined> => {
+  getResourceById: async (id: string | number,): Promise<Resource | undefined> => {
     return await repo.getById(id);
   },
-  updateResource: async (
-    id: string | number,
-    dto: Partial<Resource>,
-  ): Promise<Resource | null> => {
+  updateResource: async ( id: string | number, dto: Partial<Resource>,): Promise<Resource | null> => {
     return await repo.update(id, dto);
   },
   deleteResource: async (id: string | number): Promise<boolean> => {
     return await repo.delete(id);
   },
   getTopLikedResource: async () => {
-    const resources = await repo.getTopLikedResource();
-    resources.map((resource: any, index: number) => {
-      return {
-        rank: index + 1,
-        id: resource.id,
-        title: resource.title,
-        count: resource.likesCount
-      }
-    });
-    return resources;
+    return await repo.getTopLikedResource;
 }
 }

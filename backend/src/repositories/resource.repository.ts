@@ -1,36 +1,37 @@
-import { type Resource } from "../dtos/resource.dto.js";
+import { ResourceQueryDto, type CreateResourceRequestDto, type Resource } from "../dtos/resource.dto.js";
 import {all, get, run } from "../db/dbClient.js";
 import type { User, CreateUserRequestDto } from "../dtos/user.dto.js";
 import type { ResourceService } from "../services/resource.service.js";
 import { describe } from "node:test";
 
-/*export class  UserRepository {
-    async getAll(): Promise<User[]> {
-        const sql = "SELECT id, email, name, createdAt FROM Users ORDER BY id DESC;";
-        return await all<User>(sql);
-    }
-    async getById(id: string | number): Promise<User | undefined> {
-        const userId = Number(id);
-        const sql = `SELECT id, email, name, createdAt FROM Users WHERE id = ${userId};`;
-        return await get<User>(sql);
-    }
-    async create(data: CreateUserRequestDto): Promise<User> {
-        const now = new Date().toISOString();
-        const sql = `
-        INSERT INTO Users (email, name, createdAt)
-        VALUES ('${data.email}', '${data.username}', '${now}')`;
-
-        const result = await run(sql);
-
-        const created = await this.getById(result.lastID);
-        if(!created) throw new Error("creating user error");
-        return created;
-    }
-}*/
+export type getTopLikedResource = {
+    id: number;
+    title: string;
+    likesCount: number;
+}
+const SortByList = ["createdAt", "title"] as const;
+const SortDirList = ["asc", "desc"] as const;
 
 export class ResourceRepository {
     async getAll(): Promise<Resource[]> {
         const sql = "SELECT * FROM Resources ORDER BY id DESC;";
+        return await all<Resource>(sql);
+    }
+    async getAllFiltered(query: ResourceQueryDto): Promise<Resource[]> {
+        let sql = "SELECT * FROM Resources WHERE 1=1";
+        if(query.type) {
+            sql += `AND type = '${query.type}'`;
+        }
+        if(query.author) {
+            sql += `AND type = '${query.type}'`;
+        }
+        const sortBy = SortByList.includes(query.sortBy as any)
+        ? query.sortBy
+        : "createdAt";
+        const sortDir = SortDirList.includes(query.sortDir as any)
+        ? query.sortDir
+        : "asc";
+        sql += `ORDER BY ${sortBy} ${sortDir?.toUpperCase()};`;
         return await all<Resource>(sql);
     }
     async getById(id: string | number): Promise<Resource | undefined> {
@@ -38,7 +39,10 @@ export class ResourceRepository {
         const sql = `SELECT * FROM Resources WHERE id = ${resourceId}`;
         return await get<Resource>(sql);
     }
-    async add(data: Partial<Resource>): Promise<Resource> {
+    async add(data: CreateResourceRequestDto): Promise<Resource> {
+        if(!Number.isFinite(Number(data.userId))) {
+            throw new Error("Validation error: userId is required")
+        }
         const now = new Date().toISOString();
         const sql = `
         INSERT INTO Resources (userId, title, description, link, type, author, createdAt)
@@ -77,13 +81,14 @@ export class ResourceRepository {
         return result.changes > 0;
     }
     async getTopLikedResource(): Promise<any> {
-const sql = `
+        const sql = `
     select resources.id, count(feedback.id) as likesCount from resources
     JOIN feedback ON resources.id = feedback.resourceId
     GROUP BY resources.id
     ORDER BY likesCount DESC
     LIMIT 3
 `
- return await all(sql);
+ return await all<getTopLikedResource>(sql);
+
 }
 }

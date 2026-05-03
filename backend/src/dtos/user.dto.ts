@@ -1,6 +1,6 @@
 export interface User {
     id: string;
-    username: string;
+    name: string;
     email: string;
     role: 'student' | 'teacher' | 'admin';
     createdAt: string;
@@ -8,20 +8,20 @@ export interface User {
 
 export interface UserResponseDto {
     id: string;  
-    username: string;
+    name: string;
     email: string;
     role: 'student' | 'teacher' | 'admin';
     createdAt: string;  
 }
 
 export interface CreateUserRequestDto {
-    username: string;       
+    name: string;       
     email: string;        
     role: 'student' | 'teacher' | 'admin';
 }
 
 export interface UpdateUserRequestDto {
-    username?: string;     
+    name?: string;     
     email?: string;
     role?: 'student' | 'teacher' | 'admin';
 }

@@ -16,7 +16,7 @@ export const ResourceController = {
     getById: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const id = req.params.id as string;
-            const resource = ResourceService.getResourceById(id);
+            const resource = await ResourceService.getResourceById(id);
 
             if (!resource) {
                 res.status(404).json({
@@ -29,30 +29,36 @@ export const ResourceController = {
             next(error);
         }
     },
-    create: (req: Request, res: Response, next: NextFunction) => {
+    create: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const dto: CreateResourceRequestDto = req.body;
-            const newResource = ResourceService.createResource(dto);
+            const userId = (req as any).user?.id;
+            const newResource = await ResourceService.createResource(dto, Number(userId));
             res.status(201).json(newResource);
         } catch (error) {
             next(error);
         }
     },
-    update: (req: Request, res: Response, next: NextFunction) => {
+    update: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const updated = ResourceService.updateResource(req.params.id as string, req.body);
+            const updated = await ResourceService.updateResource(req.params.id as string, req.body);
             updated ? res.json(updated) : res.status(404).json({ error: "Not found" });
         } catch (e) { next(e); }
     },
-    patch: (req: any, res: any) => {
-        const id = req.params.id as string;
-        const updated = ResourceService.updateResource(id, req.body);
-        updated ? res.json(updated) : res.status(404).json({ error: "Not found" });
+    patch: async (req: any, res: any, next: NextFunction) => {
+        try {
+           const id = req.params.id as string;
+            const updated = await ResourceService.updateResource(id, req.body);
+            updated ? res.json(updated) : res.status(404).json({ error: "Not found" }); 
+        } catch (error) {
+            next (error)
+        }
+        
     },
-    delete: (req: Request, res: Response, next: NextFunction) => {
+    delete: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const id = String(req.params.id);
-            const deleted = ResourceService.deleteResource(id);
+            const deleted = await ResourceService.deleteResource(id);
 
             if (!deleted) {
                 res.status(404).json({ error: { message: "Resource not found" } });
