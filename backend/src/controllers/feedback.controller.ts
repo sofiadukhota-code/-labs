@@ -1,38 +1,115 @@
 import type { Request, Response, NextFunction } from "express";
 import { FeedbackService } from "../services/feedback.service.js";
-import type { CreateFeedbackDto } from "../dtos/feedback.dto.js";
+import type {
+    CreateFeedbackDto,
+    UpdateFeedbackDto,
+} from "../dtos/feedback.dto.js";
+
+function getRouteParam(value: unknown, name: string): string {
+    if (typeof value !== "string" || value.trim() === "") {
+        const err = new Error(`${name} is required`) as Error & {
+            status?: number;
+            code?: string;
+        };
+        err.status = 400;
+        err.code = "VALIDATION_ERROR";
+        throw err;
+    }
+
+    return value;
+}
 
 export const FeedbackController = {
-    create: (req: Request, res: Response, next: NextFunction) => {
+    getAll: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const dto: CreateFeedbackDto = req.body;
-            const newFeedback = FeedbackService.addFeedback(dto);
-            res.status(201).json(newFeedback);
+            const items = await FeedbackService.getAll();
+            res.status(200).json(items);
         } catch (error) {
             next(error);
         }
     },
-    getByResource: (req: Request, res: Response, next: NextFunction) => {
+
+    getById: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const resourceId = req.params.resourceId as string;
-            const feedbacks = FeedbackService.getFeedbacksByResource(resourceId);
+            const id = getRouteParam(req.params.id, "id");
+            const feedback = await FeedbackService.getById(id);
+
+            if (!feedback) {
+                res.status(404).json({
+                    error: {
+                        code: "NOT_FOUND",
+                        message: "Feedback not found",
+                    },
+                });
+                return;
+            }
+
+            res.status(200).json(feedback);
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    getByResource: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const resourceId = getRouteParam(req.params.resourceId, "resourceId");
+            const feedbacks = await FeedbackService.getByResource(resourceId);
             res.status(200).json(feedbacks);
         } catch (error) {
             next(error);
         }
     },
-    getById: (req: Request, res: Response) => {
-        const feedback = FeedbackService.getFeedbackById(req.params.id as string);
-        feedback ? res.json(feedback) : res.status(404).json({ error: "Feedback not found" });
-    },
-    update: (req: Request, res: Response, next: NextFunction) => {
+
+    create: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const updated = FeedbackService.updateFeedback(req.params.id as string, req.body);
-            updated ? res.json(updated) : res.status(404).json({ error: "Feedback not found" });
-        } catch (e) { next(e); }
+            const dto: CreateFeedbackDto = req.body;
+            const created = await FeedbackService.create(dto);
+            res.status(201).json(created);
+        } catch (error) {
+            next(error);
+        }
     },
-    delete: (req: Request, res: Response) => {
-        const success = FeedbackService.deleteFeedback(req.params.id as string);
-        success ? res.status(204).send() : res.status(404).json({ error: "Feedback not found" });
-    }
+
+    update: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const id = getRouteParam(req.params.id, "id");
+            const dto: UpdateFeedbackDto = req.body;
+            const updated = await FeedbackService.update(id, dto);
+
+            if (!updated) {
+                res.status(404).json({
+                    error: {
+                        code: "NOT_FOUND",
+                        message: "Feedback not found",
+                    },
+                });
+                return;
+            }
+
+            res.status(200).json(updated);
+        } catch (error) {
+            next(error);
+        }
+    },
+
+    delete: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const id = getRouteParam(req.params.id, "id");
+            const deleted = await FeedbackService.delete(id);
+
+            if (!deleted) {
+                res.status(404).json({
+                    error: {
+                        code: "NOT_FOUND",
+                        message: "Feedback not found",
+                    },
+                });
+                return;
+            }
+
+            res.status(204).send();
+        } catch (error) {
+            next(error);
+        }
+    },
 };

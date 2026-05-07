@@ -40,24 +40,25 @@ export const ResourceService = {
     const list: Resource[] = await repo.getAllFiltered(query);
     return list.map(ResourceService.mapToResponse)
   },
-  createResource: async (dto: CreateResourceRequestDto, userId: number): Promise<Resource> => {
+  createResource: async (dto: CreateResourceRequestDto): Promise<Resource> => {
     if (!dto.title || !dto.link || !dto.type || !dto.author) {
-      validationError("fields title, link, type, author are required");
+        validationError("fields title, link, type, author are required");
     }
-    if(!Number.isFinite(userId) || userId <= 0) {
-      validationError("userId is required")
+    if (!Number.isFinite(Number(dto.userId)) || Number(dto.userId) <= 0) {
+        validationError("userId is required");
     }
     if (dto.title.trim().length < 3) {
-      validationError("Title is too short");
+        validationError("Title is too short");
     }
     if (dto.author.trim().length < 2) {
-      validationError("Author`s name is too short");
+        validationError("Author name is too short");
     }
     if (!RESOURCE_TYPES.includes(dto.type)) {
-      validationError( `Unavaliable type. Allowed: ${RESOURCE_TYPES.join(", ")}`)
+        validationError(`Unavailable type. Allowed: ${RESOURCE_TYPES.join(", ")}`);
     }
-    return await repo.add({ ...dto, userId });
-  },
+
+    return await repo.add(dto);
+},
   getResourceById: async (id: string | number,): Promise<Resource | undefined> => {
     return await repo.getById(id);
   },
@@ -68,6 +69,6 @@ export const ResourceService = {
     return await repo.delete(id);
   },
   getTopLikedResource: async () => {
-    return await repo.getTopLikedResource;
+    return await repo.getTopLikedResource();
 }
 }

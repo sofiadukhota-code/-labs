@@ -32,8 +32,7 @@ export const ResourceController = {
     create: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const dto: CreateResourceRequestDto = req.body;
-            const userId = (req as any).user?.id;
-            const newResource = await ResourceService.createResource(dto, Number(userId));
+            const newResource = await ResourceService.createResource(dto);
             res.status(201).json(newResource);
         } catch (error) {
             next(error);

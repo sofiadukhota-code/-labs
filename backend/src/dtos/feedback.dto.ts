@@ -1,15 +1,31 @@
 export interface Feedback {
-    id: string
-    resourceId: string;
-    userId: string;
+    id: number;
+    resourceId: number;
+    userId: number;
     rating: number;
     comment: string;
     createdAt: string;
 }
 
 export interface CreateFeedbackDto {
-    resourceId: string;
-    userId: string;
+    resourceId: number;
+    userId: number;
     rating: number;
     comment: string;
+}
+
+export interface UpdateFeedbackDto {
+    resourceId?: number;
+    userId?: number;
+    rating?: number;
+    comment?: string;
+}
+
+export interface FeedbackResponseDto {
+    id: number;
+    resourceId: number;
+    userId: number;
+    rating: number;
+    comment: string;
+    createdAt: string;
 }
