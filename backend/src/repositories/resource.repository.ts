@@ -1,5 +1,6 @@
 import { all, get, run } from "../db/dbClient.js";
 import type { CreateResourceRequestDto, Resource, ResourceQueryDto } from "../dtos/resource.dto.js";
+import { FeedbackRepository } from "./feedback.repository.js";
 
 type TopLikedResourceRow = {
     id: number;
@@ -156,4 +157,15 @@ export class ResourceRepository {
 
         return await all<TopLikedResourceRow>(sql);
     }
+    async getAllWithFeedback() {
+    const resources = await this.getAll();
+    const feedbackRepo = new FeedbackRepository();
+    
+    const result = [];
+    for (const resource of resources) {
+        const feedbacks = await feedbackRepo.getByResource(resource.id);
+        result.push({ ...resource, feedbacks });
+    }
+    return result;
+}
 }

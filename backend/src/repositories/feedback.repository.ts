@@ -38,6 +38,7 @@ export class FeedbackRepository {
         ${Number(dto.resourceId)},
         ${Number(dto.userId)},
         ${Number(dto.rating)},
+        '${dto.comment.replace(/'/g, "''")}',
         '${now}'
         );
         `;
@@ -63,8 +64,8 @@ export class FeedbackRepository {
         UPDATE Feedback
         SET
             resourceId = ${Number(nextResourceId)},
-            userId = ${Number(nextUserId)}
-            rating = ${Number(nextRating)}
+            userId = ${Number(nextUserId)},
+            rating = ${Number(nextRating)},
             comment = '${nextComment}'
         WHERE id = ${feedbackId};
         `;

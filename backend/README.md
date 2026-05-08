@@ -1,35 +1,129 @@
 Варіант №5: Каталог навчальних ресурсів з рейтингом
 
-1. Як запустити: 
-    - встановлення залежностей: npm install
-    - запуск: npm run dev
-    - компіляція: npm run build
-    - запуск скомпільованого коду: npm start
+Бекенд реалізовано на Node.js + Express + TypeScript із збереженням даних у SQLite через сирі SQL-запити
 
-2. Список реалізованих сутностей:
-    Users - автори ресурсів та відгуків (id, username, email, role)
+                                                                Запуск
 
-    Resources - основний каталог (id, title, link, type, author, description)
+Встановлення залежностей та запуск
 
-    Feedbacks -  оцінки, що пов'язують користувачів та ресурси
+cd backend
+npm install
+npm run dev
 
-3. Приклади запитів (curl)
-    Resources:
-    - POST curl -X POST http://localhost:3000/api/resources \
-         -H "Content-Type: application/json" \
-        -d '{"title": "Code", "link": "http://example.com/", "type": "book", "author": "Robert Martin", "description": "Classic book"}'
-    - GET curl "http://localhost:3000/api/resources?type=book&sortBy=title&sortDir=asc"
-    - PATCH curl -X PATCH http://localhost:3000/api/resources/[ID] \
-     -H "Content-Type: application/json" \
-     -d '{"title": "Clean Code: Revised Edition"}'
+Сервер запускається на http://localhost:3000
 
-    Users:
-    - Отримати список користувачів: curl http://localhost:3000/api/users
-    - DELETE: curl -X DELETE http://localhost:3000/api/users/[ID]
+При першому запуску автоматично:
+1. створюється директорія `data/` і файл `data/app.db`;
+2. застосовуються всі міграції зі схемою БД;
+3. таблиця `schema_migrations` фіксує виконані міграції.
 
-    Feedbacks:
-    - Додати відгук: curl -X POST http://localhost:3000/api/feedbacks \
-     -H "Content-Type: application/json" \
-     -d '{"resourceId": "[ID-РЕСУРСУ]", "userId": "[ID-ЮЗЕРА]", "rating": 5, "comment": "Excellent material!"}' 
 
-Виконано на рівень "відмінно"
+Наповнення тестовими даними (seed)
+
+npm run seed
+
+Вставляє 2 користувачів, 2 ресурси та 3 відгуки.
+
+
+                                                                            База даних
+
+- Файл бази даних: data/app.db створюється автоматично при першому запуску
+- Файл не зберігається в репозиторії
+- Міграції зберігаються у src/db/migrations/ і виконуються автоматично перед стартом сервера.
+
+                                                                            Схема бази даних
+В проєкті є три основні таблиці: Users, Resources і Feedback, а також таблиця schema_migrations.
+
+Users
+Зберігає користувачів системи. Кожен користувач має унікальний email. Поле role приймає лише три значення: student, teacher або admin — . Усі поля є обов'язковими.
+
+Resources
+Зберігає навчальні ресурси: книги, статті, відео, вебсайти. Кожен ресурс належить конкретному користувачу через поле userId, яке є зовнішнім ключем до таблиці Users. Якщо видалити користувача, всі його ресурси видаляться автоматично (ON DELETE CASCADE) — ресурс без автора не має сенсу в каталозі.
+
+Feedback
+Зберігає відгуки користувачів до ресурсів. Кожен відгук пов'язаний з конкретним ресурсом через resourceId і з конкретним користувачем через userId. Рейтинг приймає тільки цілі числа від 1 до 5 — це теж перевіряється через CHECK. Якщо видалити ресурс, його відгуки видаляться разом з ним (ON DELETE CASCADE). А ось видалити користувача, який залишив відгуки, не можна — стоїть ON DELETE RESTRICT.
+
+Зв'язки між таблицями
+Один користувач може мати багато ресурсів (зв'язок 1:N між Users і Resources). 
+Один ресурс може мати багато відгуків (зв'язок 1:N між Resources і Feedback). 
+Один користувач може залишити багато відгуків (ще один зв'язок 1:N між Users і Feedback).
+Зовнішні ключі увімкнені через PRAGMA foreign_keys = ON на початку кожної міграції, інакше SQLite їх не перевіряє.
+
+Індекси
+Для прискорення типових запитів додано три індекси. 
+Індекс на колонку type у таблиці Resources допомагає швидко фільтрувати ресурси за типом — без нього SQLite читав би всю таблицю. 
+Індекс на createdAt у тій самій таблиці прискорює сортування за датою. 
+Індекс на resourceId у таблиці Feedback потрібен для швидкого знаходження всіх відгуків до конкретного ресурсу, особливо при JOIN-запитах.
+
+                                                                Ендпойнти
+Для користувачів (/api/users) доступні: отримати список, отримати одного за id, створити, оновити і видалити.
+Для ресурсів (/api/resources) доступні ті самі базові операції, плюс ендпойнт /api/resources/top-liked, який повертає топ-3 ресурси за кількістю відгуків з середнім рейтингом. Список ресурсів підтримує фільтрацію за типом (?type=book) і автором (?author=Martin), а також сортування за датою або назвою (?sortBy=title&sortDir=asc).
+
+Для відгуків (/api/feedbacks) доступні: список усіх відгуків, відгук за id, список відгуків до конкретного ресурсу (/api/feedbacks/resource/:resourceId), створити, оновити і видалити.
+
+
+
+                                                                    Приклади запитів
+
+Створити користувача
+
+curl -X POST http://localhost:3000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Alice", "email": "alice@example.com", "role": "student"}'
+
+
+Отримати список ресурсів із фільтром і сортуванням (WHERE + ORDER BY)
+
+curl "http://localhost:3000/api/resources?type=book&sortBy=title&sortDir=asc"
+
+
+Отримати топ-3 ресурси (JOIN + COUNT + AVG + LIMIT)
+
+curl http://localhost:3000/api/resources/top-liked
+
+Отримати всі відгуки до ресурсу з id 1:
+
+curl http://localhost:3000/api/feedbacks/resource/1
+
+
+Спроба створити користувача з email, що вже існує - поверне 409
+
+curl -X POST http://localhost:3000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "Bob", "email": "alice@example.com", "role": "teacher"}'
+
+
+Спроба з відсутніми обов'язковими полями - поверне 400
+
+curl -X POST http://localhost:3000/api/resources \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Book"}'
+
+
+                                                            Обробка помилок
+Усі помилки обробляються в одному централізованому middleware errorHandler. Він аналізує текст помилки від SQLite і повертає відповідний HTTP-код.
+Якщо порушено унікальність — повертається 409. Якщо порушено NOT NULL, CHECK або FOREIGN KEY — 400, бо це некоректні дані від клієнта. Якщо запис не знайдено — 404. Усі інші непередбачені помилки повертають 500.
+Формат відповіді у разі помилки завжди однаковий:
+{
+  "error": {
+    "code": "CONFLICT",
+    "message": "UNIQUE constraint failed: Users.email"
+  }
+}
+
+
+                                                       SQL injection
+
+
+В ендпойнті GET /api/resources параметр type підставляється у SQL-рядок без будь-якого екранування:
+typescriptconditions.push(`type = '${query.type}'`);
+Звичайний запит виглядає так:
+GET /api/resources?type=book
+SQL, який виконується:
+sqlWHERE type = 'book'
+Якщо передати такий ввід:
+GET /api/resources?type=book' OR '1'='1
+SQL стає:
+sqlWHERE type = 'book' OR '1'='1'
+Умова '1'='1' завжди істинна, тому фільтр за типом повністю ігнорується і повертаються абсолютно всі записи з бази. Так відбувається тому, що дані користувача вставляються безпосередньо в текст запиту і стають частиною SQL-коду, а не просто значенням для порівняння. Це і є SQL injection.
+

@@ -5,10 +5,10 @@ async function seed() {
     await migrate();
     const now = new Date().toISOString();
 
-    await run(`INSERT OR IGNORE INTO Users (email, name, createdAt)
-        VALUES ('alice@example.com', 'Alice', '${now}');`);
-    await run(`INSERT OR IGNORE INTO Users (email, name, createdAt)
-        VALUES ('bob@example.com', 'Bob', '${now}');`);
+    await run(`INSERT OR IGNORE INTO Users (email, name, role, createdAt)
+        VALUES ('alice@example.com', 'Alice', 'student', '${now}');`);
+    await run(`INSERT OR IGNORE INTO Users (email, name, role, createdAt)
+        VALUES ('bob@example.com', 'Bob', 'student', '${now}');`);
 
     await run(`INSERT OR IGNORE INTO Resources (userId, title, description, link, type, author, createdAt)
         VALUES (1, 'Clean Code', 'Book about writing clean code', 'https://example.com/1', 'book', 'Robert Martin', '${now}');`);

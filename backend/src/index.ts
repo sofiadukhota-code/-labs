@@ -6,6 +6,7 @@ import userRoutes from "./routes/user.routes.js";
 import feedbackRoutes from "./routes/feedback.routes.js"
 import { errorHandler } from "./middleware/error-handler.middleware.js";
 import { requestLogger } from "./middleware/request-logger.middleware.js";
+import exportRoutes from "./routes/export.routes.js";
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(requestLogger);
 app.use("/api/resources", resourceRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/feedbacks", feedbackRoutes);
+app.use("/api/export", exportRoutes);
 
 app.get("/health", (req, res) => {
   res.status(200).json({ok: true, message: "Backend is working"});
