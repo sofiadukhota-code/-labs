@@ -1,11 +1,11 @@
 import fs from "fs";
 import path from "path";
-import { run, all } from "./dbClient.js";
+import { run, all, exec } from "./dbClient.js";
 
 type MigrationRow = { filename: string};
 
 export async function migrate(): Promise<void> {
-    await run("PRAGMA foreign_keys = ON");
+    await run("PRAGMA foreign_keys = ON");  
     await run(`
         CREATE TABLE IF NOT EXISTS schema_migrations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,7 +26,7 @@ export async function migrate(): Promise<void> {
     for (const file of files) {
         if(!appliedSet.has(file)) {
             const sql = fs.readFileSync(path.join(migrationsDir, file), "utf8");
-            await run(sql);
+            await exec(sql);
             await run(`
                 INSERT INTO schema_migrations (filename, appliedAt)
                 VALUES ('${file}', '${new Date().toISOString()}');

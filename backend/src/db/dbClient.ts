@@ -23,3 +23,9 @@ export function run(sql: string): Promise<{ lastID: number; changes: number}> {
         })
     })
 }
+
+export function exec(sql: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        db.exec(sql, (err) => (err ? reject(err) : resolve()));
+    });
+}

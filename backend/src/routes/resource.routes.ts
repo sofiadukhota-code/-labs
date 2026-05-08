@@ -8,9 +8,9 @@ router.get("/:id", ResourceController.getById);
 router.post("/", ResourceController.create);
 router.put("/:id", ResourceController.update)
 router.patch("/:id", ResourceController.patch);
+router.delete("/:id", ResourceController.delete)
 // router.get("/", ResourceController.getAll);
 
 // router.get("/:id", ResourceController.getById);
 export default router;
 
-router.delete("/:id", ResourceController.delete)
