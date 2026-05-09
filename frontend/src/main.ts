@@ -152,7 +152,7 @@ async function loadFeedbacks(resourceId: number): Promise<void> {
 
 async function onDeleteFeedback(id: number): Promise<void> {
   try {
-    await feedbackApi.remove(id);
+    await feedbackApi.remove(id, currentFeedbackResourceId!);
     showNotice("Відгук видалено");
     if (currentFeedbackResourceId) await loadFeedbacks(currentFeedbackResourceId);
   } catch (e) {
